@@ -4,12 +4,23 @@ on:
   push:
     branches: [ main ]
 
+# Require write permissions so the action can push to gh-pages
+permissions:
+  contents: write
+  pages: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # ensure the action has credentials to push
+          persist-credentials: true
+
+      - name: Configure GitHub Pages (required for some workflows)
+        uses: actions/configure-pages@v3
 
       - name: Deploy to GitHub Pages (peaceiris)
         uses: peaceiris/actions-gh-pages@v3
