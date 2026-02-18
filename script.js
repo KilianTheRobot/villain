@@ -1,4 +1,4 @@
-// Kleines Textadventure in Deutsch
+// Vollständiges Textadventure (Deutsch)
 (function(){
   const startBtn = document.getElementById('startBtn')
   const nameInput = document.getElementById('nameInput')
@@ -13,46 +13,156 @@
 
   let state = {}
 
+  // Knoten des Abenteuers
   const nodes = {
-    start: {text: `Du bist {name}, ein Jugendlicher, der Feuer beschwören kann. Böse Wölfe haben dich von deinen Eltern getrennt. Deine Eltern sind in einem großen Schloss gefangen, das von Wolfswachen bewacht wird. Dein Ziel: Sie befreien und den Cyborg-Wolf besiegen.`, options:[{t:'Weiter',next:'entrance'}]},
+    start: {
+      text: `Du bist {name}, ein Jugendlicher mit der seltenen Gabe, Feuer aus deinen Händen zu schießen. In einer stürmischen Nacht griffen die Wolfsrudel das Dorf an. Du wurdest getrennt — deine Eltern wurden von den Wölfen ins ferne Schloss verschleppt. Nun stehst du am Waldrand, die Luft riecht nach Rauch und nassen Blättern. Du hast ein Ziel: das Schloss erreichen, deine Eltern befreien und den Cyborg-Wolf besiegen.`,
+      options:[{t:'Aufbruch in den Wald',next:'entrance'}]
+    },
 
-    entrance: {text: `Du stehst am Waldrand. Vor dir liegt ein dunkler Pfad und ein kleiner, wilder Fluss. Der Weg durch den Wald könnte schneller sein, aber stärker bewacht. Der Fluss ist langsamer, birgt aber Deckung. Was tust du?`, options:[{t:'Durch den Wald gehen (schneller, riskanter)',next:'wolfPatrol'},{t:'Dem Fluss folgen (langsamer, leiser)',next:'fishingHut'}]},
+    entrance: {
+      text: `Der Pfad teilt sich. Rechts führt ein schmaler, dunkler Weg direkt durch den Wald; links plätschert ein Fluss und bietet Deckung. Beide Wege haben ihre Risiken.`,
+      options:[
+        {t:'Durch den Wald (schneller, riskant)',next:'wolfPatrol'},
+        {t:'Dem Fluss folgen (langsamer, sicherer)',next:'fishingHut'}
+      ]
+    },
 
-    wolfPatrol: {text: `Du streifst leise durch Bäume und hörst ein Knurren: eine Wolfsstreife steht im Weg.`, options:[{t:'Feuer einsetzen und angreifen',next:'afterPatrol',e:['useFire','defeatWolf']},{t:'Versuchen vorbeizuschleichen',next:'sneakPast'}]},
+    wolfPatrol: {
+      text: `Du bewegst dich vorsichtig, als hinter einem umgestürzten Baum plötzlich mehrere Wölfe auftauchen. Ihre Augen glühen im Halbdunkel. Du kannst kämpfen oder leise versuchen, vorbei zu schleichen.`,
+      options:[
+        {t:'Feuer einsetzen und angreifen',next:'afterPatrol',e:['useFire','defeatWolf']},
+        {t:'Schleichen versuchen',next:'sneakPast'}
+      ]
+    },
 
-    sneakPast: {text: `Du schleichst vorbei, ein Wolf merkt dich und bellt — du fliehst glücklicherweise. Du verlierst etwas Zeit.`, options:[{t:'Weiter zum Schloss',next:'ruins'},{t:'Umkehren zum Fluss',next:'fishingHut'}], e:['scare']},
+    sneakPast: {
+      text: `Du hältst den Atem an und schleichst zwischen den Felsen hindurch. Ein Jungwolf bemerkt dich und fängt an zu bellen — du rennst los und entkommst knapp. Du bist erschöpft, hast jedoch Zeit verloren.`,
+      options:[{t:'Trotzdem zum Schloss weiter',next:'ruins'},{t:'Am Fluss ausruhen',next:'fishingHut'}],
+      e:['scare']
+    },
 
-    afterPatrol: {text: `Mit deiner Flammenkraft vertreibst du die Streife. Der Pfad ist nun frei. Du fühlst dich stärker, aber die Wölfe merken sich dein Feuer.`, options:[{t:'Weiter zum Schloss',next:'ruins'},{t:'Am Fluss ausruhen',next:'fishingHut'}], e:['confident']},
+    afterPatrol: {
+      text: `Deine Flammen brechen aus und vertreiben die Wölfe. Du verbrennst einige Dornen und hinterlässt eine Spur aus Glut. Das Singen in deinen Händen fühlt sich stärker an.`,
+      options:[{t:'Weiter Richtung Schloss',next:'ruins'},{t:'Den Fluss suchen und verschnaufen',next:'fishingHut'}],
+      e:['confident']
+    },
 
-    fishingHut: {text: `Am Fluss findest du eine verlassene Fischerhütte. Im Inneren liegt ein alter Schlüssel und eine Fackel.`, options:[{t:'Nimm den Schlüssel',next:'gotKey',e:['gainKey']},{t:'Nimm die Fackel',next:'gotTorch',e:['gotTorch']}]},
+    fishingHut: {
+      text: `Am Fluss liegt eine kleine, halb zerfallene Hütte. Im Inneren findest du eine alte Laterne, einen rostigen Schlüssel und ein Bündel mit Brotkrumen. Etwas hier fühlt sich vertraut an.`,
+      options:[
+        {t:'Nimm den Schlüssel',next:'gotKey',e:['gainKey']},
+        {t:'Nimm die Laterne',next:'gotTorch',e:['gotTorch']},
+        {t:'Nur kurz rasten',next:'restAtHut'}
+      ]
+    },
 
-    gotKey: {text: `Du nimmst den Schlüssel. Vielleicht gehört er zum Schloss.`, options:[{t:'Weiter zum Schloss',next:'ruins'},{t:'Noch etwas suchen',next:'searchHut'}]},
+    restAtHut: {
+      text: `Du ruhst kurz aus. Die Ruhe gibt dir Kraft, aber die Zeit läuft. Im fernen Wald hörst du Hundeheulen.`,
+      options:[{t:'Weiter zum Schloss',next:'ruins'},{t:'Doch noch etwas suchen',next:'searchHut'}],
+      e:['rest']
+    },
 
-    gotTorch: {text: `Die Fackel könnte nützlich sein, um dunkle Gänge auszuleuchten.`, options:[{t:'Weiter zum Schloss',next:'ruins'},{t:'Nochmal die Hütte durchsuchen',next:'searchHut'}], e:['gotTorch']},
+    gotKey: {
+      text: `Der Schlüssel ist schwer, aber stabil. Vielleicht passt er an einem der Schlösser im Schloss.`,
+      options:[{t:'Zum Schloss aufbrechen',next:'ruins'},{t:'Die Hütte genauer durchsuchen',next:'searchHut'}]
+    },
 
-    searchHut: {text: `Du findest nichts weiter außer ein paar Hundefellen. Ein Geruch erinnert dich an die Nähe des Schlosses.`, options:[{t:'Aufbrechen',next:'ruins'}]},
+    gotTorch: {
+      text: `Die Laterne brennt ruhig und wird dir helfen, dunkle Gänge zu erhellen — falls du Brennmaterial findest.`,
+      options:[{t:'Weiter zum Schloss',next:'ruins'},{t:'Suche nach Brennmaterial',next:'searchHut'}]
+    },
 
-    ruins: {text: `Vor dir liegen verfallene Ruinen und eine alte Straße, die zum Schloss führt. In den Ruinen lauern kleinere Wolfsrudel.`, options:[{t:'Rudelkampf wagen',next:'fightRudels',e:['defeatWolf']},{t:'Um die Ruinen herum schleichen',next:'aroundRuins'}]},
+    searchHut: {
+      text: `Du findest etwas Tuch und alte Seile. Nichts, was sofort nützlich aussieht, aber vielleicht improvisierbar.`,
+      options:[{t:'Aufbrechen zum Schloss',next:'ruins'}],
+      e:['foundRags']
+    },
 
-    fightRudels: {text: `Du kämpfst gegen mehrere Wölfe. Dein Feuer ist mächtig, doch du brauchst Kraft. Du besiegst einige, aber die Spur zum Schloss ist verwischt.`, options:[{t:'Weiter zum Schloss',next:'castleGate'}], e:['tired','defeatWolf']},
+    ruins: {
+      text: `Vor dem Schloss erstrecken sich verfallene Vorwerke und zerbrochene Statuen. Kleine Rudel patrouillieren hier, doch es gibt auch einen schmalen Pfad zur Rückseite des Schlosses.`,
+      options:[{t:'Rudelkampf wagen',next:'fightRudels',e:['defeatWolf']},{t:'Um die Ruinen herum schleichen',next:'aroundRuins'}]
+    },
 
-    aroundRuins: {text: `Du findest einen versteckten Pfad, der direkt zur Rückseite des Schlosses führt. Vielleicht ist hier ein geheimer Eingang.`, options:[{t:'Dem Pfad folgen',next:'backGate'},{t:'Zum Haupteingang gehen',next:'castleGate'}]},
+    fightRudels: {
+      text: `Du stellst dich den Wölfen. Dein Feuer erhellt die Nacht und treibt sie zurück, doch du erschöpfst dich dabei. Einige Wölfe sind besiegt, andere fliehen, um Verstärkung zu holen.`,
+      options:[{t:'Weiter zum Haupteingang',next:'castleGate'},{t:'Nach einem geheimen Pfad suchen',next:'aroundRuins'}],
+      e:['tired','defeatWolf']
+    },
 
-    castleGate: {text: `Vor dem Schloss: riesige Tore, Wolfswachen auf den Zinnen. Du brauchst entweder einen Schlüssel, oder du musst die Wachen ablenken.`, options:[{t:'Den Schlüssel benutzen (falls du ihn hast)',next:'gateOpen',cond:'gainKey'},{t:'Wachen mit Feuer ablenken',next:'distractGuards',e:['useFire']},{t:'Nach einem geheimen Eingang suchen',next:'backGate'}]},
+    aroundRuins: {
+      text: `Im Schatten der Ruinen findest du einen schmalen Durchgang, der zur Rückseite des Schlosses führt — dort soll eine Kellertür sein.`,
+      options:[{t:'Dem Pfad folgen',next:'backGate'},{t:'Zum Haupteingang gehen',next:'castleGate'}]
+    },
 
-    backGate: {text: `Hinter dem Schloss: eine kleine Kellertür. Sie wirkt verschlossen.`, options:[{t:'Mit Gewalt öffnen',next:'breakDoor',e:['tired']},{t:'Die Tür mit einem gefundenen Schlüssel öffnen',next:'gateOpen',cond:'gainKey'},{t:'Fackel benutzen um Dunkelheit zu erhellen',next:'darkCorridor',cond:'gotTorch'}]},
+    castleGate: {
+      text: `Das Haupttor ist massiv und von Wolfswachen bewacht. Auf den Zinnen patrouillieren mehrere Figuren. Ein direkter Angriff wäre tödlich ohne Plan.`,
+      options:[
+        {t:'Schlüssel verwenden (falls vorhanden)',next:'gateOpen',cond:'gainKey'},
+        {t:'Wachen mit Feuer ablenken',next:'distractGuards',e:['useFire']},
+        {t:'Geheimen Eingang suchen',next:'backGate'}
+      ]
+    },
 
-    breakDoor: {text: `Du öffnest die Tür mit Mühe. Ein Korridor führt hinein. Du hast dich angestrengt.`, options:[{t:'Reingehen',next:'darkCorridor'}], e:['tired']},
+    backGate: {
+      text: `Hinter dem Schloss liegt eine kleine Kellertür, halb verdeckt von Efeu. Sie scheint verschlossen, aber der Schlüssel könnte passen.`,
+      options:[
+        {t:'Mit Gewalt öffnen',next:'breakDoor',e:['tired']},
+        {t:'Schlüssel benutzen (falls du ihn hast)',next:'gateOpen',cond:'gainKey'},
+        {t:'Fackel benutzen, um besser sehen zu können',next:'darkCorridor',cond:'gotTorch'}
+      ]
+    },
 
-    darkCorridor: {text: `Im Inneren führst du eine schmale Treppe hinauf zum Thronsaal. Irgendwo schlummert der Cyborg-Wolf.`, options:[{t:'Leise weiterschleichen',next:'throneRoom'},{t:'Mit Feuer einen Sturmlauf machen',next:'throneRoom',e:['useFire']} ]},
+    breakDoor: {
+      text: `Mit letzter Kraft rammt du die Tür — sie knarrt auf. Ein kalter Luftstrom schlägt dir entgegen. Du spürst die Erschöpfung.`,
+      options:[{t:'Vorsichtig eintreten',next:'darkCorridor'}],
+      e:['tired']
+    },
 
-    distractGuards: {text: `Du entfachst ein Feuerwerk aus Flammen an einer Seite — einige Wachen rennen hin, andere sind alarmiert. Du hast eine Öffnung.`, options:[{t:'Durch die Öffnung stürmen',next:'throneRoom'},{t:'Weiter schleichen',next:'throneRoom'}], e:['useFire']},
+    gateOpen: {
+      text: `Der Schlüssel passt. Du öffnest eine kleine Seitentür, die in einen alten Versorgungsbereich führt. Der Geruch von Öl und Metall hängt in der Luft — gut, du bist im Inneren des Schlosses.`,
+      options:[{t:'Leise weiter in Richtung Thronsaal',next:'darkCorridor'},{t:'Kurz verschnaufen und Plan machen',next:'planBeforeThrone'}]
+    },
 
-    throneRoom: {text: `Im Thronsaal steht er: der Cyborg-Wolf, Metallplatten, rote Sensoren. Er bewacht deine Eltern. Dies ist die letzte Herausforderung.`, options:[{t:'Direkt angreifen',next:'finalFight'},{t:'Versuchen, seinen Rücken zu erreichen (Schlüssel/Stealth hilft)',next:'finalFight'}]},
+    planBeforeThrone: {
+      text: `Du sammelst deine Gedanken. Der Schlüssel hat dir einen Vorteil verschafft. Wenn du vorsichtig bist, kannst du den Cyborg-Wolf überraschen.`,
+      options:[{t:'Weiter zum Thronsaal',next:'darkCorridor'},{t:'Zuerst nach Vorräten suchen',next:'searchSupplies'}]
+    },
 
-    finalFight: {text: `Der Kampf beginnt. Deine Entscheidungen zuvor beeinflussen den Ausgang.`, options:[{t:'Kampf beenden',next:'ending'}]},
+    searchSupplies: {
+      text: `In einem Lagerraum findest du etwas Öl und Stoff — nützlich, um eine improvisierte Fackel zu bauen. Vielleicht kannst du so dunkle Sensoren stören.`,
+      options:[{t:'Weiter zum Thronsaal',next:'darkCorridor'}],
+      e:['foundSupplies']
+    },
 
-    ending: {text: `Bereit für das Ende.`, options:[{t:'Siehe Ergebnis',next:null}]}
+    darkCorridor: {
+      text: `Die Treppe führt dich hinauf in leere Hallen. Überall liegen Spuren von Kampf und Metall. Irgendwo weiter vorn ist der Thronsaal — und dein Ziel.`,
+      options:[{t:'Leise weiterschleichen',next:'throneRoom'},{t:'Mit Feuer einen Sturmlauf machen',next:'throneRoom',e:['useFire']}] 
+    },
+
+    distractGuards: {
+      text: `Du entfachst ein Feuersignal. Einige Wachen stürmen zur Quelle des Lichts, andere sind alarmiert, aber eine Lücke entsteht — genug, um in das Schloss vorzudringen.`,
+      options:[{t:'Jetzt hineinstürmen',next:'throneRoom'},{t:'Langsam und leise vorgehen',next:'throneRoom'}],
+      e:['useFire']
+    },
+
+    throneRoom: {
+      text: `Der Thronsaal ist riesig und düster. In der Mitte sitzt der Cyborg-Wolf auf einem mechanischen Thron. Deine Eltern sind gefesselt neben dem Thron. Seine Sensoren leuchten rot — er ist bereit.`,
+      options:[{t:'Direkt angreifen',next:'finalFight'},{t:'Versuche, seine Schwachstelle zu finden (Rücken / Sensoren)',next:'finalFight'}]
+    },
+
+    finalFight: {
+      text: `Der Kampf ist intensiv. Die Entscheidungen, die du getroffen hast — Schlüssel, Feuer, Vorräte, Müdigkeit — beeinflussen, wie der Kampf ausgeht.`,
+      options:[
+        {t:'Alles geben (Risiko)',next:'ending',e:['useFire','finalStrike']},
+        {t:'Sicherer, gezielter Angriff',next:'ending',e:['finalStrike']}
+      ]
+    },
+
+    ending: {
+      text: `Das Schicksal entscheidet...`,
+      options:[{t:'Ergebnis anzeigen',next:null}]
+    }
   }
 
   function applyEffects(effects){
@@ -65,6 +175,9 @@
       if(e==='tired') state.tired = (state.tired||0) + 1
       if(e==='confident') state.confident = true
       if(e==='scare') state.scared = true
+      if(e==='foundRags') state.rags = true
+      if(e==='foundSupplies') state.supplies = true
+      if(e==='finalStrike') state.finalStrike = (state.finalStrike||0) + 1
     })
   }
 
@@ -78,8 +191,7 @@
     let text = node.text.replace('{name}', state.name)
     sceneText.textContent = text
     options.innerHTML=''
-    // Filter options by condition if present
-    (node.options||[]).forEach(opt=>{
+    ;(node.options||[]).forEach(opt=>{
       if(opt.cond){
         if(opt.cond==='gainKey' && !state.hasKey) return
         if(opt.cond==='gotTorch' && !state.gotTorch) return
@@ -89,14 +201,9 @@
       btn.addEventListener('click', ()=>{
         state.decisionCount = (state.decisionCount||0) + 1
         if(opt.e) applyEffects(Array.isArray(opt.e)?opt.e:[opt.e])
-        if(node === nodes.finalFight && state.decisionCount >= 10){
-          // proceed to ending
-          showEnding();
-          return
-        }
-        // if we hit the global limit of decisions, finish
+        // global limit: nach 10 Entscheidungen endet das Spiel
         if(state.decisionCount >= 10){
-          showEnding();
+          showEnding()
           return
         }
         showNode(opt.next)
@@ -110,36 +217,45 @@
     const parts = []
     parts.push(`Entscheidungen: ${state.decisionCount||0}/10`)
     if(state.hasKey) parts.push('Schlüssel: Ja')
-    if(state.gotTorch) parts.push('Fackel: Ja')
+    if(state.gotTorch) parts.push('Laterne: Ja')
     if(state.wolvesDefeated) parts.push(`Wölfe besiegt: ${state.wolvesDefeated}`)
+    if(state.tired) parts.push(`Erschöpfung: ${state.tired}`)
     status.textContent = parts.join(' • ')
   }
 
   function showEnding(){
+    // Hide game UI
     game.classList.add('hidden')
     endSec.classList.remove('hidden')
-    // Determine result
+
     const usedFire = state.usedFire||0
     const wolves = state.wolvesDefeated||0
     const key = !!state.hasKey
-    let text = ''
+    const supplies = !!state.supplies
+    const tired = state.tired||0
+    const finalStr = state.finalStrike||0
 
-    // simple outcome decision
-    if((key && usedFire>0) || (wolves>=3) || (usedFire>=3)){
-      text += `Triumph! ${state.name} kämpft mit Flammenkraft und List und besiegt den Cyborg-Wolf. Deine Eltern werden befreit. Das Schloss stürzt nicht ein, aber die Wölfe ziehen sich zurück.`
-    } else if((key && usedFire===0) || (wolves>=1 && usedFire>0)){
-      text += `${state.name} schafft es, den Cyborg-Wolf zu schwächen. Nach einem harten Kampf können die Eltern befreit werden, aber der Weg bleibt schwer.`
+    let result = ''
+
+    // Conditions for different endings
+    if(finalStr > 0 && (usedFire >= 2 || (key && supplies)) && tired < 3){
+      result = `Triumph! ${state.name} entfesselt all seine Kraft. Mit Feuer, List und dem gefundenen Schlüssel gelingt es, den Cyborg-Wolf zu überwältigen. Deine Eltern sind gerettet. Die Wölfe ziehen sich zurück – das Schloss bleibt stehen. Ein neuer Morgen beginnt.`
+    } else if((usedFire > 0 && wolves >=2) || (key && usedFire>0)){
+      result = `${state.name} kämpft heldenhaft. Der Cyborg-Wolf wird schwer verwundet; die Eltern werden befreit, aber das Schloss ist beschädigt. Ihr Rückzug ist schwer — doch ihr überlebt.`
+    } else if(tired >=3 && !supplies){
+      result = `Erschöpft und ohne ausreichende Vorbereitung gelingt es nicht, den Cyborg-Wolf endgültig zu besiegen. Du rettest vielleicht einen Elternteil, musst dich aber zurückziehen. Hoffnung bleibt, doch der Preis war groß.`
     } else {
-      text += `Das Ende ist bitter. Ohne ausreichende Vorbereitungen war der Cyborg-Wolf zu stark. Du überlebst knapp und musst dich zurückziehen — doch die Hoffnung bleibt.`
+      result = `Das Schicksal war ungünstig. Ohne die nötigen Ressourcen war der Cyborg-Wolf eine zu große Herausforderung. Du überlebst knapp und musst die Mission abbrechen. Doch vielleicht ist dies nur der Anfang deiner Geschichte.`
     }
 
-    text += `\n\n(Statistik) Entscheidungen: ${state.decisionCount||0} • Wölfe besiegt: ${wolves} • Feuer verwendet: ${usedFire} • Schlüssel: ${key?'Ja':'Nein'}`
-    endText.textContent = text
+    result += `\n\n(Statistik) Entscheidungen: ${state.decisionCount||0} • Wölfe besiegt: ${wolves} • Feuer verwendet: ${usedFire} • Schlüssel: ${key?'Ja':'Nein'} • Erschöpfung: ${tired}`
+
+    endText.textContent = result
   }
 
   startBtn.addEventListener('click', ()=>{
     const name = (nameInput.value||'Florian').trim() || 'Florian'
-    state = {name, decisionCount:0, hasKey:false, usedFire:0, wolvesDefeated:0}
+    state = {name, decisionCount:0, hasKey:false, usedFire:0, wolvesDefeated:0, tired:0}
     intro.classList.add('hidden')
     endSec.classList.add('hidden')
     game.classList.remove('hidden')
@@ -154,7 +270,7 @@
     nameInput.value = ''
   })
 
-  // small accessibility: start with Enter on input
+  // accessibility: Enter starts the game
   nameInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') startBtn.click() })
 
 })()
