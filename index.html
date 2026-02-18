@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flammenkind — Ein kurzes Textadventure</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Flammenkind</h1>
+    <section id="intro">
+      <p>Gib deinen Namen ein, dann beginnt dein Abenteuer.</p>
+      <input id="nameInput" placeholder="Dein Name (z. B. Florian)" />
+      <div class="row">
+        <button id="startBtn">Spiel starten</button>
+      </div>
+    </section>
+
+    <section id="game" class="hidden">
+      <div id="sceneText" class="scene"></div>
+      <div id="options" class="options"></div>
+      <div id="status" class="status"></div>
+    </section>
+
+    <section id="end" class="hidden">
+      <h2>Ende</h2>
+      <div id="endText"></div>
+      <div class="row">
+        <button id="restart">Nochmal spielen</button>
+      </div>
+    </section>
+
+    <footer>
+      <small>Ein kleines Textadventure — wird automatisch auf GitHub Pages veröffentlicht (siehe README).</small>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
